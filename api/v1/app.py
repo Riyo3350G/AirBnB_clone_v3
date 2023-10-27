@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """flask app"""
-from flask import Flask
+from flask import Flask, jsonify
 from os import getenv
 from models import storage
 from api.v1.views import app_views
@@ -10,6 +10,12 @@ app = Flask(__name__)
 
 
 app.register_blueprint(app_views)
+
+
+@app.errorhandler(404)
+def page_not_found(e):
+    """404 error"""
+    return jsonify({"error": "Not found"}), 404
 
 
 @app.teardown_appcontext
