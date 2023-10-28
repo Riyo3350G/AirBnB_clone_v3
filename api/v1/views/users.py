@@ -51,7 +51,7 @@ def post_user():
         return jsonify({"error": "Missing password"}), 400
     user = User(email=request.json["email"], password=request.json["password"])
     user.save()
-    return jsonify(amenity.to_dict()), 201
+    return jsonify(user.to_dict()), 201
 
 
 @app_views.route('/users/<user_id>', methods=['PUT'],
