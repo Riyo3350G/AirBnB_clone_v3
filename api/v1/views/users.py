@@ -56,7 +56,7 @@ def post_user():
 
 @app_views.route('/users/<user_id>', methods=['PUT'],
                  strict_slashes=False)
-def put_user(amenity_id):
+def put_user(user_id):
     """ Update a user Object"""
     user = storage.get(User, user_id)
     if user is None:
