@@ -95,4 +95,4 @@ def update_review(review_id):
         if key not in keys:
             setattr(rev, key, val)
     rev.save()
-    return jsonify(rev.to_dict())
+    return jsonify(rev.to_dict()), 200
