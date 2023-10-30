@@ -108,15 +108,18 @@ def places_search():
 
     all_places = []
     if state_cities and len(state_cities) > 0:
+        state_cities = list(set(state_cities))
         for city in state_cities:
             for place in city.places:
                 all_places.append(place)
 
     if amenities and len(amenities) > 0:
         all_amenities = storage.all('Amenity')
-        for a in all_amenities:
-            if a.id in amenities:
-                all_places.append(a.place)
+        for amenity in all_amenities:
+            if amenity.id in amenities:
+                for place in all_places:
+                    if place.id in amenity.place_amenities:
+                        all_places.append(place)
 
     for place in all_places:
         place = place.to_dict()
