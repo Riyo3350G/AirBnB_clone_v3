@@ -89,45 +89,45 @@ def places_search():
     if req is None:
         return jsonify({"error": "Not a JSON"}), 400
 
-    state_ids = req.get("states")
-    city_ids = req.get("cities")
-    amenity_ids = req.get("amenities")
+    state_list = req.get("states")
+    city_list = req.get("cities")
+    amenity_list = req.get("amenities")
     searched_places = []
 
-    if not req and not state_ids and not city_ids:
-        searched_places = storage.all(Place)
+    # if not req and not state_list and not city_list:
+    #     searched_places = storage.all(Place)
 
-    if state_ids:
-        for state_id in state_ids:
+    if state_list:
+        for state_id in state_list:
             state = storage.get(State, state_id)
             if state:
                 for city in state.cities:
                     for place in city.places:
                         searched_places.append(place)
 
-    if city_ids:
-        for city_id in city_ids:
+    if city_list:
+        for city_id in city_list:
             city = storage.get(City, city_id)
             if city:
                 for place in city.places:
                     if place not in searched_places:
                         searched_places.append(place)
 
-    if amenity_ids:
+    if amenity_list:
         for place in searched_places:
             if place.amenities:
                 place_amenity_ids = [amenity.id for amenity in place.amenities]
-                for amenity_id in amenity_ids:
+                for amenity_id in amenity_list:
                     if amenity_id not in place_amenity_ids:
                         searched_places.remove(place)
                         break
 
-    # serialize to json
+    # serialize to json and remove unnecessary keys
     searched_places = [storage.get(Place, place.id).
                        to_dict() for place in searched_places]
-    keys_to_remove = ["amenities", "reviews", "amenity_ids"]
+    to_be_removed = ["amenities", "reviews", "amenity_ids"]
     searched_places = [
-        {k: v for k, v in place_dict.items() if k not in keys_to_remove}
+        {key: v for key, v in place_dict.items() if key not in to_be_removed}
         for place_dict in searched_places
     ]
 
