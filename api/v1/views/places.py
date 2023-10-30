@@ -4,6 +4,8 @@ from api.v1.views import app_views
 from flask import jsonify, request
 from models import storage
 from models.place import Place
+from models.city import City
+from models.state import State
 
 
 @app_views.route(
@@ -86,48 +88,47 @@ def places_search():
     req = request.get_json()
     if req is None:
         return jsonify({"error": "Not a JSON"}), 400
-    places = storage.all('Place').values()
-    state = req.get('states')
-    city = req.get('cities')
-    amenities = req.get('amenities')
 
-    state_cities = []
-    if state and len(state) > 0:
-        cities = storage.all("City")
-        for city in cities:
-            if city.state_id in state:
-                state_cities.append(city)
+    state_ids = req.get("states")
+    city_ids = req.get("cities")
+    amenity_ids = req.get("amenities")
+    searched_places = []
 
-    cities = []
-    if city and len(city) > 0:
-        all_cities = storage.all('City')
-        for c in all_cities:
-            if c.id in city:
-                cities.append(c)
-        state_cities = state_cities.union(cities)
+    if not req and not state_ids and not city_ids:
+        searched_places = storage.all(Place)
 
-    all_places = []
-    if state_cities and len(state_cities) > 0:
-        state_cities = list(set(state_cities))
-        for city in state_cities:
-            for place in city.places:
-                all_places.append(place)
+    if state_ids:
+        for state_id in state_ids:
+            state = storage.get(State, state_id)
+            if state:
+                for city in state.cities:
+                    for place in city.places:
+                        searched_places.append(place)
 
-    amnts = []
-    if amenities and len(amenities) > 0:
-        all_amenities = storage.all('Amenity')
-        for amenity in all_amenities:
-            if amenity.id in amenities:
-                amnts.append(amenity)
+    if city_ids:
+        for city_id in city_ids:
+            city = storage.get(City, city_id)
+            if city:
+                for place in city.places:
+                    if place not in searched_places:
+                        searched_places.append(place)
 
-        for place in all_places:
-            for amenity in amnts:
-                if amenity not in place.amenities:
-                    all_places.remove(place)
-                    break
+    if amenity_ids:
+        for place in searched_places:
+            if place.amenities:
+                place_amenity_ids = [amenity.id for amenity in place.amenities]
+                for amenity_id in amenity_ids:
+                    if amenity_id not in place_amenity_ids:
+                        searched_places.remove(place)
+                        break
 
-    update_places = []
-    for place in all_places:
-        update_places.append(place.to_dict())
+    # serialize to json
+    searched_places = [storage.get(Place, place.id).
+                       to_dict() for place in searched_places]
+    keys_to_remove = ["amenities", "reviews", "amenity_ids"]
+    searched_places = [
+        {k: v for k, v in place_dict.items() if k not in keys_to_remove}
+        for place_dict in searched_places
+    ]
 
-    return jsonify(update_places)
+    return jsonify(searched_places)
