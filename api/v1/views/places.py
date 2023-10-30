@@ -113,13 +113,18 @@ def places_search():
             for place in city.places:
                 all_places.append(place)
 
+    amnts = []
     if amenities and len(amenities) > 0:
         all_amenities = storage.all('Amenity')
         for amenity in all_amenities:
             if amenity.id in amenities:
-                for place in all_places:
-                    if place.id not in amenity.place_amenities:
-                        all_places.remove(place)
+                amnts.append(amenity)
+
+        for place in all_places:
+            for amenity in amnts:
+                if amenity not in place.amenities:
+                    all_places.remove(place)
+                    break
 
     update_places = []
     for place in all_places:
