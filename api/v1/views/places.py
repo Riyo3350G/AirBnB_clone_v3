@@ -118,8 +118,8 @@ def places_search():
         for amenity in all_amenities:
             if amenity.id in amenities:
                 for place in all_places:
-                    if place.id in amenity.place_amenities:
-                        all_places.append(place)
+                    if place.id not in amenity.place_amenities:
+                        all_places.remove(place)
 
     update_places = []
     for place in all_places:
