@@ -94,9 +94,6 @@ def places_search():
     amenity_list = req.get("amenities")
     searched_places = []
 
-    # if not req and not state_list and not city_list:
-    #     searched_places = storage.all(Place)
-
     if state_list:
         for state_id in state_list:
             state = storage.get(State, state_id)
