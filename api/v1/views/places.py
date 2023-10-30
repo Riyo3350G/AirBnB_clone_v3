@@ -121,7 +121,8 @@ def places_search():
                     if place.id in amenity.place_amenities:
                         all_places.append(place)
 
+    update_places = []
     for place in all_places:
-        place = place.to_dict()
+        update_places.append(place.to_dict())
 
-    return jsonify(all_places)
+    return jsonify(update_places)
